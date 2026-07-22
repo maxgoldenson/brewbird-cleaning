@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BrewBird — Cleaning Tablet Procedure</title>
+<meta name="description" content="Step-by-step cleaning tablet procedure for the BrewBird brewer.">
+<style>
+  :root {
+    --blue: #2440c8;
+    --blue-dark: #16277e;
+    --blue-tint: #eef1fc;
+    --ink: #1a1d29;
+    --muted: #5c6270;
+    --warn-bg: #fff7e0;
+    --warn-border: #e6b800;
+    --ok: #1e8a4c;
+    --card-border: #e3e6ef;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink);
+    background: #fafbfe;
+    line-height: 1.55;
+  }
+
+  header {
+    background: linear-gradient(160deg, var(--blue) 0%, var(--blue-dark) 100%);
+    color: #fff;
+    text-align: center;
+    padding: 40px 20px 34px;
+  }
+  header img.logo { width: 110px; height: auto; margin-bottom: 14px; }
+  header h1 { font-size: 1.7rem; font-weight: 700; letter-spacing: 0.01em; }
+  header p.sub { margin-top: 6px; font-size: 1rem; opacity: 0.85; }
+  header .rev {
+    display: inline-block; margin-top: 14px; padding: 3px 12px;
+    border: 1px solid rgba(255,255,255,0.45); border-radius: 999px;
+    font-size: 0.78rem; letter-spacing: 0.06em; opacity: 0.9;
+  }
+
+  .intro {
+    max-width: 720px; margin: 0 auto; padding: 22px 18px 4px;
+    font-size: 0.95rem; color: var(--muted);
+  }
+  .intro strong { color: var(--ink); }
+
+  main { max-width: 720px; margin: 0 auto; padding: 14px 14px 30px; }
+
+  .step {
+    background: #fff;
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 20px 18px;
+    margin-top: 18px;
+    box-shadow: 0 1px 3px rgba(20, 30, 80, 0.05);
+  }
+  .step-head { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .step-num {
+    flex: 0 0 auto;
+    width: 38px; height: 38px; border-radius: 50%;
+    background: var(--blue); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.15rem; font-weight: 700;
+  }
+  .step h2 { font-size: 1.2rem; font-weight: 700; }
+
+  .step ol.actions { list-style: none; margin: 4px 0 2px; }
+  .step ol.actions li {
+    padding: 5px 0 5px 26px;
+    position: relative;
+    font-size: 1rem;
+  }
+  .step ol.actions li::before {
+    content: "";
+    position: absolute; left: 6px; top: 13px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--blue);
+  }
+
+  .warn {
+    display: flex; gap: 10px; align-items: flex-start;
+    background: var(--warn-bg);
+    border: 1px solid var(--warn-border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin: 10px 0 4px;
+    font-size: 0.95rem;
+  }
+  .warn .icon { flex: 0 0 auto; font-size: 1.05rem; line-height: 1.4; }
+
+  .photos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin-top: 14px;
+  }
+  .photos figure { margin: 0; }
+  .photos img {
+    width: 100%; height: auto; display: block;
+    border-radius: 10px;
+    border: 1px solid var(--card-border);
+  }
+  .photos figcaption {
+    font-size: 0.8rem; color: var(--muted);
+    margin-top: 5px; text-align: center;
+  }
+
+  ul.checklist { list-style: none; margin: 6px 0 2px; }
+  ul.checklist li { padding: 4px 0; }
+  ul.checklist label {
+    display: flex; gap: 10px; align-items: flex-start; cursor: pointer;
+    font-size: 1rem;
+  }
+  ul.checklist input[type="checkbox"] {
+    flex: 0 0 auto;
+    width: 20px; height: 20px; margin-top: 2px;
+    accent-color: var(--ok);
+  }
+  ul.checklist input[type="checkbox"]:checked + span {
+    color: var(--muted); text-decoration: line-through;
+  }
+
+  .done {
+    text-align: center;
+    background: var(--blue-tint);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 28px 18px;
+    margin-top: 18px;
+  }
+  .done .check { font-size: 2rem; }
+  .done h2 { font-size: 1.25rem; margin-top: 6px; color: var(--blue-dark); }
+  .done p { color: var(--muted); font-size: 0.95rem; margin-top: 4px; }
+
+  footer {
+    text-align: center;
+    padding: 18px 12px 34px;
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <img class="logo" src="img/logo.png" alt="BrewBird logo">
+  <h1>Cleaning Tablet Procedure</h1>
+  <p class="sub">Step-by-step guide for the BrewBird brewer</p>
+  <span class="rev">REV 01</span>
+</header>
+
+<p class="intro">
+  <strong>You will need:</strong> a Cleaning Tablet Pod, a Rinse Pod, a Dry Pod,
+  a Cafiza cleaning tablet, the tablet wand, and a pitcher (1000&nbsp;mL capacity or higher).
+  Tap a photo to view it full size.
+</p>
+
+<main>
+
+  <section class="step">
+    <div class="step-head">
+      <div class="step-num">1</div>
+      <h2>Insert Cleaning Tablet Pod</h2>
+    </div>
+    <ol class="actions">
+      <li>Insert the Cleaning Tablet Pod.</li>
+      <li>Touch the screen to start the cycle.</li>
+    </ol>
+    <div class="photos">
+      <figure>
+        <a href="img/step1a-insert-pod.jpg"><img src="img/step1a-insert-pod.jpg" alt="Inserting the cleaning tablet pod into the pod holder" loading="lazy"></a>
+        <figcaption>Insert the Cleaning Tablet Pod</figcaption>
+      </figure>
+      <figure>
+        <a href="img/step1b-touch-start.jpg"><img src="img/step1b-touch-start.jpg" alt="Touching the screen to start the cycle" loading="lazy"></a>
+        <figcaption>Touch the screen to start</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="step">
+    <div class="step-head">
+      <div class="step-num">2</div>
+      <h2>Remove Tray</h2>
+    </div>
+    <ol class="actions">
+      <li>When prompted, remove the tray.</li>
+      <li>Set the tray aside.</li>
+    </ol>
+    <div class="warn"><span class="icon">⚠️</span><span>The tray has moving parts — hold it securely as shown.</span></div>
+    <div class="photos">
+      <figure>
+        <a href="img/step2a-prompt.jpg"><img src="img/step2a-prompt.jpg" alt="Brewer screen showing the prompt to remove the tray" loading="lazy"></a>
+        <figcaption>Wait for the prompt</figcaption>
+      </figure>
+      <figure>
+        <a href="img/step2b-hold-tray.jpg"><img src="img/step2b-hold-tray.jpg" alt="Holding the tray securely from underneath with both surfaces supported" loading="lazy"></a>
+        <figcaption>Hold the tray securely as shown</figcaption>
+      </figure>
+      <figure>
+        <a href="img/step2c-set-aside.jpg"><img src="img/step2c-set-aside.jpg" alt="Tray set aside on the counter next to the brewer" loading="lazy"></a>
+        <figcaption>Set the tray aside</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="step">
+    <div class="step-head">
+      <div class="step-num">3</div>
+      <h2>Place Cafiza Tablet Into Wand</h2>
+    </div>
+    <ol class="actions">
+      <li>Place a Cafiza cleaning tablet into the wand as shown.</li>
+    </ol>
+    <div class="photos">
+      <figure>
+        <a href="img/step3a-cafiza.jpg"><img src="img/step3a-cafiza.jpg" alt="Container of Cafiza espresso machine cleaning tablets" loading="lazy"></a>
+        <figcaption>Cafiza cleaning tablets</figcaption>
+      </figure>
+      <figure>
+        <a href="img/step3b-wand-loaded.jpg"><img src="img/step3b-wand-loaded.jpg" alt="Tablet wand loaded with a Cafiza tablet, hanging at the brewer" loading="lazy"></a>
+        <figcaption>Tablet loaded in the wand</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="step">
+    <div class="step-head">
+      <div class="step-num">4</div>
+      <h2>Deploy Tablet</h2>
+    </div>
+    <ol class="actions">
+      <li>Insert the wand into the chute — the tablet should face down.</li>
+      <li>Verify the tablet was deployed: listen carefully for the tablet to fall.</li>
+    </ol>
+    <div class="warn"><span class="icon">⚠️</span><span>Verify the tablet did not fall into the trash area or onto the floor.</span></div>
+    <div class="photos">
+      <figure>
+        <a href="img/step4a-wand-chute.jpg"><img src="img/step4a-wand-chute.jpg" alt="Wand inserted down into the open chute" loading="lazy"></a>
+        <figcaption>Insert the wand into the chute</figcaption>
+      </figure>
+      <figure>
+        <a href="img/step4b-tablet-down.jpg"><img src="img/step4b-tablet-down.jpg" alt="Wand held with the tablet side facing down" loading="lazy"></a>
+        <figcaption>Tablet facing down</figcaption>
+      </figure>
+      <figure>
+        <a href="img/step4c-verify.jpg"><img src="img/step4c-verify.jpg" alt="Wand fully inserted while listening for the tablet to drop" loading="lazy"></a>
+        <figcaption>Listen for the tablet to fall</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="step">
+    <div class="step-head">
+      <div class="step-num">5</div>
+      <h2>Run Cleaning Tablet Cycle</h2>
+    </div>
+    <ol class="actions">
+      <li>Reinsert the tray — the action should be smooth.</li>
+      <li>Place a pitcher (1000&nbsp;mL capacity or higher) on the tray.</li>
+      <li>Touch the screen to start the cleaning cycle.</li>
+    </ol>
+    <div class="photos">
+      <figure>
+        <a href="img/step5a-reinsert-tray.jpg"><img src="img/step5a-reinsert-tray.jpg" alt="Reinserting the tray into the brewer" loading="lazy"></a>
+        <figcaption>Reinsert the tray smoothly</figcaption>
+      </figure>
+      <figure>
+        <a href="img/step5b-pitcher.jpg"><img src="img/step5b-pitcher.jpg" alt="Pitcher placed on the tray under the dispense area" loading="lazy"></a>
+        <figcaption>Pitcher (1000 mL+) on the tray</figcaption>
+      </figure>
+      <figure>
+        <a href="img/step5c-touch-start.jpg"><img src="img/step5c-touch-start.jpg" alt="Touching the screen to start the cleaning cycle" loading="lazy"></a>
+        <figcaption>Touch the screen to start</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="step">
+    <div class="step-head">
+      <div class="step-num">6</div>
+      <h2>Run Rinse Cycle</h2>
+    </div>
+    <ol class="actions">
+      <li>After the cleaning cycle is complete, remove the Cleaning Tablet Pod.</li>
+      <li>Insert the Rinse Pod.</li>
+      <li>Touch the screen to start the rinse cycle.</li>
+    </ol>
+    <div class="photos">
+      <figure>
+        <a href="img/step6a-rinse-pod.jpg"><img src="img/step6a-rinse-pod.jpg" alt="Rinse Cycle pod held next to the pod holder" loading="lazy"></a>
+        <figcaption>Insert the Rinse Pod</figcaption>
+      </figure>
+      <figure>
+        <a href="img/step6b-touch-start.jpg"><img src="img/step6b-touch-start.jpg" alt="Touching the screen to start the rinse cycle" loading="lazy"></a>
+        <figcaption>Touch the screen to start</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="step">
+    <div class="step-head">
+      <div class="step-num">7</div>
+      <h2>Run Blank Cycle</h2>
+    </div>
+    <ol class="actions">
+      <li>After the rinse cycle is complete, remove the Rinse Pod.</li>
+      <li>Insert the Dry Pod.</li>
+      <li>Touch the screen to start the blank cycle.</li>
+    </ol>
+    <div class="photos">
+      <figure>
+        <a href="img/step7a-dry-pod.jpg"><img src="img/step7a-dry-pod.jpg" alt="Dry Pod held next to the open pod holder" loading="lazy"></a>
+        <figcaption>Insert the Dry Pod</figcaption>
+      </figure>
+      <figure>
+        <a href="img/step7b-touch-start.jpg"><img src="img/step7b-touch-start.jpg" alt="Touching the screen to start the blank cycle" loading="lazy"></a>
+        <figcaption>Touch the screen to start</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="step">
+    <div class="step-head">
+      <div class="step-num">8</div>
+      <h2>Cleanup</h2>
+    </div>
+    <ul class="checklist">
+      <li><label><input type="checkbox"><span>Empty the pitcher into an appropriate disposal bin after the blank cycle completes.</span></label></li>
+      <li><label><input type="checkbox"><span>Dispose of any waste in the tray.</span></label></li>
+      <li><label><input type="checkbox"><span>Clean the brewer interior.</span></label></li>
+      <li><label><input type="checkbox"><span>Wipe the brewer exterior and surrounding area.</span></label></li>
+      <li><label><input type="checkbox"><span>Replace all items and tools.</span></label></li>
+    </ul>
+    <div class="photos" style="max-width: 320px;">
+      <figure>
+        <a href="img/step8a-empty-pitcher.jpg"><img src="img/step8a-empty-pitcher.jpg" alt="Emptying the pitcher into a sink" loading="lazy"></a>
+        <figcaption>Empty the pitcher into an appropriate disposal bin</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <div class="done">
+    <div class="check">✅</div>
+    <h2>Cleaning Tablet Procedure Complete</h2>
+    <p>The brewer is clean and ready for use.</p>
+  </div>
+
+</main>
+
+<footer>BrewBird · Cleaning Tablet Procedure · Rev 01</footer>
+
+</body>
+</html>
