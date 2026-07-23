@@ -596,11 +596,10 @@
   }
   window.addEventListener('wheel', cancelSlowScroll, { passive: true });
   window.addEventListener('touchstart', cancelSlowScroll, { passive: true });
-  function slowScrollTo(el) {
+  function slowScrollToY(targetY) {
     cancelSlowScroll();
-    if (reducedMotion) { el.scrollIntoView(); return; }
+    if (reducedMotion) { window.scrollTo(0, targetY); return; }
     var startY = window.pageYOffset;
-    var targetY = el.getBoundingClientRect().top + startY - STICKY_OFFSET;
     var dist = targetY - startY;
     var dur = 900, t0 = null;
     function ease(t) { return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; }
@@ -611,6 +610,9 @@
       scrollAnim = p < 1 ? requestAnimationFrame(frame) : null;
     }
     scrollAnim = requestAnimationFrame(frame);
+  }
+  function slowScrollTo(el) {
+    slowScrollToY(el.getBoundingClientRect().top + window.pageYOffset - STICKY_OFFSET);
   }
 
   // completion celebration: animated check, then back to the top,
@@ -664,10 +666,8 @@
   });
 
   document.getElementById('resetBtn').addEventListener('click', function () {
-    if (!confirm('Reset all progress for a new cleaning?')) return;
-    cancelSlowScroll();
     resetAll();
-    window.scrollTo({ top: 0, behavior: reducedMotion ? 'auto' : 'smooth' });
+    slowScrollToY(0);
   });
 
   var lb = document.getElementById('lightbox');
