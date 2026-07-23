@@ -52,10 +52,12 @@
     overflow: hidden;
   }
   .progress .fill {
-    height: 100%; width: 0%;
+    height: 100%; width: 100%;
     background: var(--ok);
     border-radius: 999px;
-    transition: width 0.3s ease;
+    transform: scaleX(0); transform-origin: 0 50%;
+    transition: transform 0.3s ease; /* compositor-only, no layout work */
+    will-change: transform;
   }
   .progress button.reset {
     border: 1px solid var(--card-border); background: #fff; color: var(--muted);
@@ -238,8 +240,12 @@
       display: flex; flex-direction: column;
       height: calc(100vh - 66px);   /* 54px sticky bar + 12px breathing room */
       height: calc(100dvh - 66px);  /* tracks iOS Safari's collapsing URL bar */
-      overflow-y: auto;             /* safety valve for huge accessibility fonts */
+      overflow: hidden;
+      overflow: clip;               /* no nested scroll container per card */
       padding-bottom: 16px;
+      content-visibility: auto;     /* skip layout/paint of off-screen cards
+                                       during the scroll animation; explicit
+                                       height keeps scroll geometry exact */
     }
     .step .photos {
       display: flex; gap: 8px;
@@ -354,12 +360,12 @@
     <div class="photos">
       <figure>
         <span class="pb">1</span>
-        <a href="img/step1a-insert-pod.jpg"><img src="img/step1a-insert-pod.jpg" alt="Inserting the cleaning tablet pod into the pod holder" loading="lazy"></a>
+        <a href="img/step1a-insert-pod.jpg"><img src="img/thumb/step1a-insert-pod.jpg" decoding="async" alt="Inserting the cleaning tablet pod into the pod holder" loading="lazy"></a>
         <figcaption>Insert the Cleaning Tablet Pod</figcaption>
       </figure>
       <figure>
         <span class="pb">2</span>
-        <a href="img/step1b-touch-start.jpg"><img src="img/step1b-touch-start.jpg" alt="Touching the screen to start the cycle" loading="lazy"></a>
+        <a href="img/step1b-touch-start.jpg"><img src="img/thumb/step1b-touch-start.jpg" decoding="async" alt="Touching the screen to start the cycle" loading="lazy"></a>
         <figcaption>Touch the screen to start</figcaption>
       </figure>
     </div>
@@ -379,17 +385,17 @@
     <div class="photos">
       <figure>
         <span class="pb">1</span>
-        <a href="img/step2a-prompt.jpg"><img src="img/step2a-prompt.jpg" alt="Brewer screen showing the prompt to remove the tray" loading="lazy"></a>
+        <a href="img/step2a-prompt.jpg"><img src="img/thumb/step2a-prompt.jpg" decoding="async" alt="Brewer screen showing the prompt to remove the tray" loading="lazy"></a>
         <figcaption>Wait for the prompt</figcaption>
       </figure>
       <figure>
         <span class="pb alert">!</span>
-        <a href="img/step2b-hold-tray.jpg"><img src="img/step2b-hold-tray.jpg" alt="Holding the tray securely from underneath with both surfaces supported" loading="lazy"></a>
+        <a href="img/step2b-hold-tray.jpg"><img src="img/thumb/step2b-hold-tray.jpg" decoding="async" alt="Holding the tray securely from underneath with both surfaces supported" loading="lazy"></a>
         <figcaption>Hold the tray securely as shown</figcaption>
       </figure>
       <figure>
         <span class="pb">2</span>
-        <a href="img/step2c-set-aside.jpg"><img src="img/step2c-set-aside.jpg" alt="Tray set aside on the counter next to the brewer" loading="lazy"></a>
+        <a href="img/step2c-set-aside.jpg"><img src="img/thumb/step2c-set-aside.jpg" decoding="async" alt="Tray set aside on the counter next to the brewer" loading="lazy"></a>
         <figcaption>Set the tray aside</figcaption>
       </figure>
     </div>
@@ -407,12 +413,12 @@
     <div class="photos">
       <figure>
         <span class="pb">1</span>
-        <a href="img/step3a-cafiza.jpg"><img src="img/step3a-cafiza.jpg" alt="Container of Cafiza espresso machine cleaning tablets" loading="lazy"></a>
+        <a href="img/step3a-cafiza.jpg"><img src="img/thumb/step3a-cafiza.jpg" decoding="async" alt="Container of Cafiza espresso machine cleaning tablets" loading="lazy"></a>
         <figcaption>Cafiza cleaning tablets</figcaption>
       </figure>
       <figure>
         <span class="pb result">✓</span>
-        <a href="img/step3b-wand-loaded.jpg"><img src="img/step3b-wand-loaded.jpg" alt="Tablet wand loaded with a Cafiza tablet, hanging at the brewer" loading="lazy"></a>
+        <a href="img/step3b-wand-loaded.jpg"><img src="img/thumb/step3b-wand-loaded.jpg" decoding="async" alt="Tablet wand loaded with a Cafiza tablet, hanging at the brewer" loading="lazy"></a>
         <figcaption>How the loaded wand should look</figcaption>
       </figure>
     </div>
@@ -433,17 +439,17 @@
     <div class="photos">
       <figure>
         <span class="pb">1</span>
-        <a href="img/step4a-wand-chute.jpg"><img src="img/step4a-wand-chute.jpg" alt="Wand inserted down into the open chute" loading="lazy"></a>
+        <a href="img/step4a-wand-chute.jpg"><img src="img/thumb/step4a-wand-chute.jpg" decoding="async" alt="Wand inserted down into the open chute" loading="lazy"></a>
         <figcaption>Insert the wand into the chute</figcaption>
       </figure>
       <figure>
         <span class="pb">1</span>
-        <a href="img/step4b-tablet-down.jpg"><img src="img/step4b-tablet-down.jpg" alt="Wand held with the tablet side facing down" loading="lazy"></a>
+        <a href="img/step4b-tablet-down.jpg"><img src="img/thumb/step4b-tablet-down.jpg" decoding="async" alt="Wand held with the tablet side facing down" loading="lazy"></a>
         <figcaption>Tablet facing down</figcaption>
       </figure>
       <figure>
         <span class="pb">3</span>
-        <a href="img/step4c-verify.jpg"><img src="img/step4c-verify.jpg" alt="Wand fully inserted while listening for the tablet to drop" loading="lazy"></a>
+        <a href="img/step4c-verify.jpg"><img src="img/thumb/step4c-verify.jpg" decoding="async" alt="Wand fully inserted while listening for the tablet to drop" loading="lazy"></a>
         <figcaption>Listen for the tablet to fall</figcaption>
       </figure>
     </div>
@@ -463,17 +469,17 @@
     <div class="photos">
       <figure>
         <span class="pb">1</span>
-        <a href="img/step5a-reinsert-tray.jpg"><img src="img/step5a-reinsert-tray.jpg" alt="Reinserting the tray into the brewer" loading="lazy"></a>
+        <a href="img/step5a-reinsert-tray.jpg"><img src="img/thumb/step5a-reinsert-tray.jpg" decoding="async" alt="Reinserting the tray into the brewer" loading="lazy"></a>
         <figcaption>Reinsert the tray smoothly</figcaption>
       </figure>
       <figure>
         <span class="pb">2</span>
-        <a href="img/step5b-pitcher.jpg"><img src="img/step5b-pitcher.jpg" alt="Pitcher placed on the tray under the dispense area" loading="lazy"></a>
+        <a href="img/step5b-pitcher.jpg"><img src="img/thumb/step5b-pitcher.jpg" decoding="async" alt="Pitcher placed on the tray under the dispense area" loading="lazy"></a>
         <figcaption>Pitcher (1000 mL+) on the tray</figcaption>
       </figure>
       <figure>
         <span class="pb">3</span>
-        <a href="img/step5c-touch-start.jpg"><img src="img/step5c-touch-start.jpg" alt="Touching the screen to start the cleaning cycle" loading="lazy"></a>
+        <a href="img/step5c-touch-start.jpg"><img src="img/thumb/step5c-touch-start.jpg" decoding="async" alt="Touching the screen to start the cleaning cycle" loading="lazy"></a>
         <figcaption>Touch the screen to start</figcaption>
       </figure>
     </div>
@@ -494,12 +500,12 @@
     <div class="photos">
       <figure>
         <span class="pb">2</span>
-        <a href="img/step6a-rinse-pod.jpg"><img src="img/step6a-rinse-pod.jpg" alt="Rinse Cycle pod held next to the pod holder" loading="lazy"></a>
+        <a href="img/step6a-rinse-pod.jpg"><img src="img/thumb/step6a-rinse-pod.jpg" decoding="async" alt="Rinse Cycle pod held next to the pod holder" loading="lazy"></a>
         <figcaption>Insert the Rinse Pod</figcaption>
       </figure>
       <figure>
         <span class="pb">3</span>
-        <a href="img/step6b-touch-start.jpg"><img src="img/step6b-touch-start.jpg" alt="Touching the screen to start the rinse cycle" loading="lazy"></a>
+        <a href="img/step6b-touch-start.jpg"><img src="img/thumb/step6b-touch-start.jpg" decoding="async" alt="Touching the screen to start the rinse cycle" loading="lazy"></a>
         <figcaption>Touch the screen to start</figcaption>
       </figure>
     </div>
@@ -520,12 +526,12 @@
     <div class="photos">
       <figure>
         <span class="pb">2</span>
-        <a href="img/step7a-dry-pod.jpg"><img src="img/step7a-dry-pod.jpg" alt="Dry Pod held next to the open pod holder" loading="lazy"></a>
+        <a href="img/step7a-dry-pod.jpg"><img src="img/thumb/step7a-dry-pod.jpg" decoding="async" alt="Dry Pod held next to the open pod holder" loading="lazy"></a>
         <figcaption>Insert the Dry Pod</figcaption>
       </figure>
       <figure>
         <span class="pb">3</span>
-        <a href="img/step7b-touch-start.jpg"><img src="img/step7b-touch-start.jpg" alt="Touching the screen to start the blank cycle" loading="lazy"></a>
+        <a href="img/step7b-touch-start.jpg"><img src="img/thumb/step7b-touch-start.jpg" decoding="async" alt="Touching the screen to start the blank cycle" loading="lazy"></a>
         <figcaption>Touch the screen to start</figcaption>
       </figure>
     </div>
@@ -548,7 +554,7 @@
     <div class="photos" style="max-width: 320px;">
       <figure>
         <span class="pb">1</span>
-        <a href="img/step8a-empty-pitcher.jpg"><img src="img/step8a-empty-pitcher.jpg" alt="Emptying the pitcher into a sink" loading="lazy"></a>
+        <a href="img/step8a-empty-pitcher.jpg"><img src="img/thumb/step8a-empty-pitcher.jpg" decoding="async" alt="Emptying the pitcher into a sink" loading="lazy"></a>
         <figcaption>Empty the pitcher into an appropriate disposal bin</figcaption>
       </figure>
     </div>
@@ -598,7 +604,7 @@
     var done = 0;
     steps.forEach(function (s) { if (s.classList.contains('completed')) done++; });
     progLabel.textContent = done + ' / ' + TOTAL + ' steps';
-    progFill.style.width = (done / TOTAL * 100) + '%';
+    progFill.style.transform = 'scaleX(' + (done / TOTAL) + ')';
     doneBanner.classList.toggle('all', done === TOTAL);
   }
 
@@ -637,7 +643,7 @@
     function frame(ts) {
       if (t0 === null) t0 = ts;
       var p = Math.min((ts - t0) / dur, 1);
-      window.scrollTo(0, startY + dist * ease(p));
+      window.scrollTo(0, Math.round(startY + dist * ease(p)));
       scrollAnim = p < 1 ? requestAnimationFrame(frame) : null;
     }
     scrollAnim = requestAnimationFrame(frame);
