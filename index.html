@@ -711,6 +711,7 @@
 
   var lb = document.getElementById('lightbox');
   var lbImg = lb.querySelector('img');
+  var lbClosedAt = -1e9;
   function closeLightbox() {
     lb.classList.remove('open');
     lbImg.removeAttribute('src');
@@ -718,10 +719,14 @@
     lb.style.backgroundColor = '';
     z = { s: 1, tx: 0, ty: 0 };
     pinch = null; pan = null;
+    lbClosedAt = performance.now();
   }
   document.querySelectorAll('.photos a').forEach(function (a) {
     a.addEventListener('click', function (e) {
       e.preventDefault();
+      // a tap that just closed the lightbox can synthesize a click that
+      // lands on the thumbnail underneath — don't let it instantly reopen
+      if (performance.now() - lbClosedAt < 400) return;
       lbImg.src = a.getAttribute('href');
       lbImg.alt = a.querySelector('img').alt;
       lb.classList.add('open');
@@ -850,7 +855,10 @@
         var wasTap = pan.moved < 10;
         pan = null;
         noteInteraction();
-        if (wasTap) resetZoom(true);
+        if (wasTap) {
+          if (e.cancelable) e.preventDefault(); // stop the synthesized click
+          resetZoom(true);
+        }
       } else {
         noteInteraction();
       }
@@ -862,7 +870,10 @@
     var dt = performance.now() - lbDrag.t0;
     if (Math.abs(lbDrag.dx) < 10 && Math.abs(lbDrag.dy) < 10) {
       // motionless touch at normal size closes — detected at touchend so it
-      // works even if the browser never synthesizes a click for the overlay
+      // works even if the browser never synthesizes a click for the overlay.
+      // preventDefault stops that click from passing through to the page
+      // underneath and instantly reopening a thumbnail.
+      if (e.cancelable) e.preventDefault();
       closeLightbox();
       return;
     }
