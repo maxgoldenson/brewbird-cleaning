@@ -573,7 +573,7 @@
 
 <footer>BrewBird · Cleaning Tablet Procedure · Rev 01</footer>
 
-<div id="lightbox"><img alt=""><div class="hint">Tap or swipe away to close</div></div>
+<div id="lightbox"><img alt=""><div class="hint">Pinch to zoom · tap or swipe away to close</div></div>
 
 <div id="celebrate" role="status">
   <svg class="cm" viewBox="0 0 52 52" aria-hidden="true">
@@ -716,6 +716,8 @@
     lbImg.removeAttribute('src');
     lbImg.style.cssText = '';
     lb.style.backgroundColor = '';
+    z = { s: 1, tx: 0, ty: 0 };
+    pinch = null; pan = null;
   }
   document.querySelectorAll('.photos a').forEach(function (a) {
     a.addEventListener('click', function (e) {
@@ -726,18 +728,91 @@
     });
   });
 
-  // swipe the photo up or down to dismiss; short drags spring back
+  // lightbox gestures — three modes that hand off to each other:
+  //   not zoomed + 1 finger  -> swipe up/down to dismiss (springs back if short)
+  //   2 fingers              -> pinch to zoom, anchored at the pinch midpoint
+  //   zoomed   + 1 finger    -> pan the image (clamped to its edges)
+  var z = { s: 1, tx: 0, ty: 0 };
   var lbDrag = { on: false, startY: 0, dy: 0, t0: 0 };
+  var pinch = null, pan = null;
   var suppressClick = false;
+  var MAX_ZOOM = 4;
+
+  function noteInteraction() {
+    suppressClick = true;
+    setTimeout(function () { suppressClick = false; }, 500);
+  }
+  function applyZoom(animated) {
+    lbImg.style.transition = animated && !reducedMotion
+      ? 'transform 0.25s ease' : 'none';
+    lbImg.style.transform = 'translate(' + z.tx + 'px, ' + z.ty + 'px) scale(' + z.s + ')';
+  }
+  function clampPan() {
+    var maxX = Math.max(0, (lbImg.offsetWidth * z.s - lb.clientWidth) / 2);
+    var maxY = Math.max(0, (lbImg.offsetHeight * z.s - lb.clientHeight) / 2);
+    z.tx = Math.min(maxX, Math.max(-maxX, z.tx));
+    z.ty = Math.min(maxY, Math.max(-maxY, z.ty));
+  }
+  function resetZoom(animated) {
+    z = { s: 1, tx: 0, ty: 0 };
+    if (animated && !reducedMotion) {
+      lbImg.style.transition = 'transform 0.25s ease';
+      lbImg.style.transform = '';
+    } else {
+      lbImg.style.transition = 'none';
+      lbImg.style.transform = '';
+    }
+  }
+  function dist(a, b) { return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY); }
+  function mid(a, b) {
+    // relative to the viewport center, which is the image's resting center
+    return { x: (a.clientX + b.clientX) / 2 - window.innerWidth / 2,
+             y: (a.clientY + b.clientY) / 2 - window.innerHeight / 2 };
+  }
+
   lb.addEventListener('touchstart', function (e) {
-    if (!lb.classList.contains('open') || e.touches.length !== 1) return;
-    lbDrag.on = true;
-    lbDrag.startY = e.touches[0].clientY;
-    lbDrag.dy = 0;
-    lbDrag.t0 = performance.now();
-    lbImg.style.transition = 'none';
+    if (!lb.classList.contains('open')) return;
+    if (e.touches.length === 2) {
+      lbDrag.on = false;               // pinch takes over from a dismiss drag
+      lb.style.backgroundColor = '';
+      pan = null;
+      pinch = { d0: dist(e.touches[0], e.touches[1]), s0: z.s,
+                m0: mid(e.touches[0], e.touches[1]), tx0: z.tx, ty0: z.ty };
+      lbImg.style.transition = 'none';
+      return;
+    }
+    if (e.touches.length !== 1) return;
+    if (z.s > 1.001) {
+      pan = { x0: e.touches[0].clientX, y0: e.touches[0].clientY, tx0: z.tx, ty0: z.ty };
+      lbImg.style.transition = 'none';
+    } else {
+      lbDrag.on = true;
+      lbDrag.startY = e.touches[0].clientY;
+      lbDrag.dy = 0;
+      lbDrag.t0 = performance.now();
+      lbImg.style.transition = 'none';
+    }
   }, { passive: true });
+
   lb.addEventListener('touchmove', function (e) {
+    if (pinch && e.touches.length >= 2) {
+      e.preventDefault();
+      var m = mid(e.touches[0], e.touches[1]);
+      z.s = Math.min(MAX_ZOOM, Math.max(0.6, pinch.s0 * dist(e.touches[0], e.touches[1]) / pinch.d0));
+      // keep the image point under the pinch midpoint anchored to it
+      z.tx = m.x - (z.s / pinch.s0) * (pinch.m0.x - pinch.tx0);
+      z.ty = m.y - (z.s / pinch.s0) * (pinch.m0.y - pinch.ty0);
+      applyZoom(false);
+      return;
+    }
+    if (pan && e.touches.length === 1) {
+      e.preventDefault();
+      z.tx = pan.tx0 + (e.touches[0].clientX - pan.x0);
+      z.ty = pan.ty0 + (e.touches[0].clientY - pan.y0);
+      clampPan();
+      applyZoom(false);
+      return;
+    }
     if (!lbDrag.on) return;
     e.preventDefault();
     lbDrag.dy = e.touches[0].clientY - lbDrag.startY;
@@ -745,10 +820,31 @@
     var f = Math.min(Math.abs(lbDrag.dy) / 400, 0.75);
     lb.style.backgroundColor = 'rgba(10, 12, 24, ' + (0.92 * (1 - f)).toFixed(3) + ')';
   }, { passive: false });
-  function lbRelease() {
+
+  function lbRelease(e) {
+    if (pinch) {
+      if (e.touches.length >= 2) return;
+      pinch = null;
+      noteInteraction();
+      if (z.s < 1.05) {
+        resetZoom(true);
+      } else {
+        clampPan();
+        applyZoom(true);
+        if (e.touches.length === 1) {   // one finger still down: hand off to pan
+          pan = { x0: e.touches[0].clientX, y0: e.touches[0].clientY, tx0: z.tx, ty0: z.ty };
+        }
+      }
+      return;
+    }
+    if (pan) {
+      if (e.touches.length === 0) pan = null;
+      noteInteraction();
+      return;
+    }
     if (!lbDrag.on) return;
     lbDrag.on = false;
-    if (Math.abs(lbDrag.dy) > 10) { suppressClick = true; setTimeout(function () { suppressClick = false; }, 500); }
+    if (Math.abs(lbDrag.dy) > 10) noteInteraction();
     var speed = Math.abs(lbDrag.dy) / Math.max(performance.now() - lbDrag.t0, 1);
     var dismiss = Math.abs(lbDrag.dy) > 90 || (speed > 0.5 && Math.abs(lbDrag.dy) > 30);
     if (dismiss && !reducedMotion) {
@@ -768,9 +864,12 @@
   }
   lb.addEventListener('touchend', lbRelease);
   lb.addEventListener('touchcancel', lbRelease);
+  // belt and braces: stop iOS Safari's page-level pinch zoom inside the lightbox
+  lb.addEventListener('gesturestart', function (e) { e.preventDefault(); });
 
   lb.addEventListener('click', function () {
     if (suppressClick) { suppressClick = false; return; }
+    if (z.s > 1.001) return;           // a stray tap while zoomed shouldn't close
     if (lb.classList.contains('open')) closeLightbox();
   });
 
