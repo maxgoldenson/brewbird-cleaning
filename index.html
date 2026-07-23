@@ -209,6 +209,36 @@
     font-size: 0.8rem;
   }
 
+  /* completion celebration overlay */
+  #celebrate {
+    display: none;
+    position: fixed; inset: 0; z-index: 200;
+    background: linear-gradient(160deg, #22a05c 0%, #14653a 100%);
+    color: #fff;
+    flex-direction: column; align-items: center; justify-content: center;
+    gap: 4px; text-align: center; padding: 24px;
+    cursor: pointer;
+  }
+  #celebrate.open { display: flex; animation: cel-in 0.25s ease; }
+  #celebrate.fade { opacity: 0; transition: opacity 0.4s ease; }
+  #celebrate h2 { font-size: 1.45rem; }
+  #celebrate p { font-size: 1rem; opacity: 0.85; margin-top: 2px; }
+  .cm { width: 130px; height: 130px; margin-bottom: 16px; }
+  .cm-circle {
+    stroke: #fff; stroke-width: 2.5; stroke-linecap: round;
+    stroke-dasharray: 151; stroke-dashoffset: 151;
+  }
+  .cm-check {
+    stroke: #fff; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round;
+    stroke-dasharray: 35; stroke-dashoffset: 35;
+  }
+  #celebrate.open .cm-circle { animation: cm-draw 0.6s ease forwards; }
+  #celebrate.open .cm-check { animation: cm-draw 0.4s 0.65s ease forwards; }
+  #celebrate.open .cm { animation: cm-pop 0.3s 1.05s ease; }
+  @keyframes cm-draw { to { stroke-dashoffset: 0; } }
+  @keyframes cm-pop { 50% { transform: scale(1.12); } }
+  @keyframes cel-in { from { opacity: 0; } to { opacity: 1; } }
+
   /* lightbox */
   #lightbox {
     display: none;
@@ -485,6 +515,15 @@
 
 <div id="lightbox"><img alt=""><div class="hint">Tap anywhere to close</div></div>
 
+<div id="celebrate" role="status">
+  <svg class="cm" viewBox="0 0 52 52" aria-hidden="true">
+    <circle class="cm-circle" cx="26" cy="26" r="24" fill="none"/>
+    <path class="cm-check" fill="none" d="M14 27l7.5 7.5L38 18"/>
+  </svg>
+  <h2>Procedure Complete!</h2>
+  <p>The brewer is clean and ready for use.</p>
+</div>
+
 <script>
 (function () {
   var TOTAL = 8;
@@ -521,12 +560,34 @@
     refresh();
   }
 
+  // completion celebration: animated check, then back to the top
+  var cel = document.getElementById('celebrate');
+  var celTimer = null;
+  function closeCelebrate() {
+    if (!cel.classList.contains('open')) return;
+    clearTimeout(celTimer);
+    cel.classList.add('fade');
+    setTimeout(function () { cel.classList.remove('open', 'fade'); }, 400);
+    window.scrollTo({ top: 0, behavior: reducedMotion ? 'auto' : 'smooth' });
+  }
+  function celebrate() {
+    if (reducedMotion) { window.scrollTo({ top: 0 }); return; }
+    cel.classList.remove('fade');
+    cel.classList.add('open');
+    celTimer = setTimeout(closeCelebrate, 2400);
+  }
+  cel.addEventListener('click', closeCelebrate);
+
   steps.forEach(function (s) {
     if (load('bb-step-' + s.dataset.step) === '1') setStep(s, true, false);
     s.querySelector('button.mark').addEventListener('click', function () {
       var nowDone = !s.classList.contains('completed');
       setStep(s, nowDone, true);
-      if (nowDone) {
+      if (!nowDone) return;
+      var allDone = steps.every(function (x) { return x.classList.contains('completed'); });
+      if (allDone) {
+        celebrate();
+      } else {
         var next = steps[steps.indexOf(s) + 1] || doneBanner;
         next.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' });
       }
