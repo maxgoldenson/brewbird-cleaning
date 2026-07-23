@@ -306,9 +306,11 @@
     cursor: zoom-out;
   }
   #lightbox.open { display: flex; }
+  #lightbox { touch-action: none; } /* the overlay owns its pan gestures */
   #lightbox img {
     max-width: 100%; max-height: 92vh;
     border-radius: 10px;
+    will-change: transform;
   }
   #lightbox .hint {
     position: absolute; bottom: 14px; left: 0; right: 0;
@@ -571,7 +573,7 @@
 
 <footer>BrewBird · Cleaning Tablet Procedure · Rev 01</footer>
 
-<div id="lightbox"><img alt=""><div class="hint">Tap anywhere to close</div></div>
+<div id="lightbox"><img alt=""><div class="hint">Tap or swipe away to close</div></div>
 
 <div id="celebrate" role="status">
   <svg class="cm" viewBox="0 0 52 52" aria-hidden="true">
@@ -709,6 +711,12 @@
 
   var lb = document.getElementById('lightbox');
   var lbImg = lb.querySelector('img');
+  function closeLightbox() {
+    lb.classList.remove('open');
+    lbImg.removeAttribute('src');
+    lbImg.style.cssText = '';
+    lb.style.backgroundColor = '';
+  }
   document.querySelectorAll('.photos a').forEach(function (a) {
     a.addEventListener('click', function (e) {
       e.preventDefault();
@@ -717,7 +725,54 @@
       lb.classList.add('open');
     });
   });
-  lb.addEventListener('click', function () { lb.classList.remove('open'); lbImg.removeAttribute('src'); });
+
+  // swipe the photo up or down to dismiss; short drags spring back
+  var lbDrag = { on: false, startY: 0, dy: 0, t0: 0 };
+  var suppressClick = false;
+  lb.addEventListener('touchstart', function (e) {
+    if (!lb.classList.contains('open') || e.touches.length !== 1) return;
+    lbDrag.on = true;
+    lbDrag.startY = e.touches[0].clientY;
+    lbDrag.dy = 0;
+    lbDrag.t0 = performance.now();
+    lbImg.style.transition = 'none';
+  }, { passive: true });
+  lb.addEventListener('touchmove', function (e) {
+    if (!lbDrag.on) return;
+    e.preventDefault();
+    lbDrag.dy = e.touches[0].clientY - lbDrag.startY;
+    lbImg.style.transform = 'translateY(' + lbDrag.dy + 'px)';
+    var f = Math.min(Math.abs(lbDrag.dy) / 400, 0.75);
+    lb.style.backgroundColor = 'rgba(10, 12, 24, ' + (0.92 * (1 - f)).toFixed(3) + ')';
+  }, { passive: false });
+  function lbRelease() {
+    if (!lbDrag.on) return;
+    lbDrag.on = false;
+    if (Math.abs(lbDrag.dy) > 10) { suppressClick = true; setTimeout(function () { suppressClick = false; }, 500); }
+    var speed = Math.abs(lbDrag.dy) / Math.max(performance.now() - lbDrag.t0, 1);
+    var dismiss = Math.abs(lbDrag.dy) > 90 || (speed > 0.5 && Math.abs(lbDrag.dy) > 30);
+    if (dismiss && !reducedMotion) {
+      // fling off in the swipe direction, fade the backdrop, then close
+      lbImg.style.transition = 'transform 0.25s ease, opacity 0.25s ease';
+      lbImg.style.transform = 'translateY(' + (lbDrag.dy < 0 ? -1 : 1) * window.innerHeight + 'px)';
+      lbImg.style.opacity = '0';
+      lb.style.backgroundColor = 'rgba(10, 12, 24, 0)';
+      setTimeout(closeLightbox, 240);
+    } else if (dismiss) {
+      closeLightbox();
+    } else {
+      lbImg.style.transition = 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)';
+      lbImg.style.transform = '';
+      lb.style.backgroundColor = '';
+    }
+  }
+  lb.addEventListener('touchend', lbRelease);
+  lb.addEventListener('touchcancel', lbRelease);
+
+  lb.addEventListener('click', function () {
+    if (suppressClick) { suppressClick = false; return; }
+    if (lb.classList.contains('open')) closeLightbox();
+  });
 
   refresh();
 })();
