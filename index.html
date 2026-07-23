@@ -783,11 +783,14 @@
     }
     if (e.touches.length !== 1) return;
     if (z.s > 1.001) {
-      pan = { x0: e.touches[0].clientX, y0: e.touches[0].clientY, tx0: z.tx, ty0: z.ty };
+      pan = { x0: e.touches[0].clientX, y0: e.touches[0].clientY,
+              tx0: z.tx, ty0: z.ty, moved: 0, t0: performance.now() };
       lbImg.style.transition = 'none';
     } else {
       lbDrag.on = true;
+      lbDrag.startX = e.touches[0].clientX;
       lbDrag.startY = e.touches[0].clientY;
+      lbDrag.dx = 0;
       lbDrag.dy = 0;
       lbDrag.t0 = performance.now();
       lbImg.style.transition = 'none';
@@ -807,14 +810,18 @@
     }
     if (pan && e.touches.length === 1) {
       e.preventDefault();
-      z.tx = pan.tx0 + (e.touches[0].clientX - pan.x0);
-      z.ty = pan.ty0 + (e.touches[0].clientY - pan.y0);
+      var pdx = e.touches[0].clientX - pan.x0;
+      var pdy = e.touches[0].clientY - pan.y0;
+      pan.moved = Math.max(pan.moved, Math.abs(pdx), Math.abs(pdy));
+      z.tx = pan.tx0 + pdx;
+      z.ty = pan.ty0 + pdy;
       clampPan();
       applyZoom(false);
       return;
     }
     if (!lbDrag.on) return;
     e.preventDefault();
+    lbDrag.dx = e.touches[0].clientX - lbDrag.startX;
     lbDrag.dy = e.touches[0].clientY - lbDrag.startY;
     lbImg.style.transform = 'translateY(' + lbDrag.dy + 'px)';
     var f = Math.min(Math.abs(lbDrag.dy) / 400, 0.75);
@@ -838,14 +845,28 @@
       return;
     }
     if (pan) {
-      if (e.touches.length === 0) pan = null;
-      noteInteraction();
+      if (e.touches.length === 0) {
+        // a motionless touch while zoomed = tap: zoom back to fit
+        var wasTap = pan.moved < 10;
+        pan = null;
+        noteInteraction();
+        if (wasTap) resetZoom(true);
+      } else {
+        noteInteraction();
+      }
       return;
     }
     if (!lbDrag.on) return;
     lbDrag.on = false;
-    if (Math.abs(lbDrag.dy) > 10) noteInteraction();
-    var speed = Math.abs(lbDrag.dy) / Math.max(performance.now() - lbDrag.t0, 1);
+    noteInteraction(); // taps are handled right here; the trailing click must not double-fire
+    var dt = performance.now() - lbDrag.t0;
+    if (Math.abs(lbDrag.dx) < 10 && Math.abs(lbDrag.dy) < 10) {
+      // motionless touch at normal size closes — detected at touchend so it
+      // works even if the browser never synthesizes a click for the overlay
+      closeLightbox();
+      return;
+    }
+    var speed = Math.abs(lbDrag.dy) / Math.max(dt, 1);
     var dismiss = Math.abs(lbDrag.dy) > 90 || (speed > 0.5 && Math.abs(lbDrag.dy) > 30);
     if (dismiss && !reducedMotion) {
       // fling off in the swipe direction, fade the backdrop, then close
@@ -869,7 +890,7 @@
 
   lb.addEventListener('click', function () {
     if (suppressClick) { suppressClick = false; return; }
-    if (z.s > 1.001) return;           // a stray tap while zoomed shouldn't close
+    if (z.s > 1.001) { resetZoom(true); return; } // zoomed: first click zooms out
     if (lb.classList.contains('open')) closeLightbox();
   });
 
