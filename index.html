@@ -20,7 +20,6 @@
     --card-border: #e3e6ef;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     color: var(--ink);
@@ -587,6 +586,33 @@
     boxes.forEach(function (b) { b.checked = false; store('bb-' + b.dataset.key, null); });
   }
 
+  // unhurried scroll to the next step (~0.9s ease-in-out); the browser's
+  // native smooth scroll is faster and not tunable. Only one animation at
+  // a time, and the user grabbing the page cancels it.
+  var STICKY_OFFSET = 54;
+  var scrollAnim = null;
+  function cancelSlowScroll() {
+    if (scrollAnim !== null) { cancelAnimationFrame(scrollAnim); scrollAnim = null; }
+  }
+  window.addEventListener('wheel', cancelSlowScroll, { passive: true });
+  window.addEventListener('touchstart', cancelSlowScroll, { passive: true });
+  function slowScrollTo(el) {
+    cancelSlowScroll();
+    if (reducedMotion) { el.scrollIntoView(); return; }
+    var startY = window.pageYOffset;
+    var targetY = el.getBoundingClientRect().top + startY - STICKY_OFFSET;
+    var dist = targetY - startY;
+    var dur = 900, t0 = null;
+    function ease(t) { return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; }
+    function frame(ts) {
+      if (t0 === null) t0 = ts;
+      var p = Math.min((ts - t0) / dur, 1);
+      window.scrollTo(0, startY + dist * ease(p));
+      scrollAnim = p < 1 ? requestAnimationFrame(frame) : null;
+    }
+    scrollAnim = requestAnimationFrame(frame);
+  }
+
   // completion celebration: animated check, then back to the top,
   // fully reset for the next cleaning
   var cel = document.getElementById('celebrate');
@@ -594,12 +620,18 @@
   function closeCelebrate() {
     if (!cel.classList.contains('open')) return;
     clearTimeout(celTimer);
-    resetAll(); // page behind the overlay is clean before the fade reveals it
+    // reset and jump to the top while the overlay is still fully opaque,
+    // so the fade reveals a clean page already at the top — no visible
+    // scroll (cancel any in-flight step scroll so it can't drag the page
+    // back down after the jump)
+    cancelSlowScroll();
+    resetAll();
+    window.scrollTo(0, 0);
     cel.classList.add('fade');
     setTimeout(function () { cel.classList.remove('open', 'fade'); }, 400);
-    window.scrollTo({ top: 0, behavior: reducedMotion ? 'auto' : 'smooth' });
   }
   function celebrate() {
+    cancelSlowScroll();
     if (reducedMotion) { resetAll(); window.scrollTo({ top: 0 }); return; }
     cel.classList.remove('fade');
     cel.classList.add('open');
@@ -619,8 +651,7 @@
       if (allDone) {
         celebrate();
       } else {
-        var next = steps[steps.indexOf(s) + 1] || doneBanner;
-        next.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' });
+        slowScrollTo(steps[steps.indexOf(s) + 1] || doneBanner);
       }
     });
   });
@@ -634,6 +665,7 @@
 
   document.getElementById('resetBtn').addEventListener('click', function () {
     if (!confirm('Reset all progress for a new cleaning?')) return;
+    cancelSlowScroll();
     resetAll();
     window.scrollTo({ top: 0, behavior: reducedMotion ? 'auto' : 'smooth' });
   });
