@@ -183,9 +183,30 @@
     color: var(--blue); background: var(--blue-tint);
     border: 1px solid #c9d3f2; border-radius: 10px;
     cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.1s ease, background-color 0.25s ease,
+                color 0.25s ease, border-color 0.25s ease;
   }
+  button.mark:active { transform: scale(0.97); }
   .step.completed button.mark {
     color: var(--ok); background: var(--ok-tint); border-color: #bfe3cd;
+  }
+  .step-num { transition: background-color 0.25s ease; }
+  /* .just is set for ~0.5s when a step is marked done interactively,
+     so these play on tap but not when saved progress is restored */
+  @media (prefers-reduced-motion: no-preference) {
+    .step.just button.mark { animation: mark-pop 0.4s ease; }
+    .step.just .step-num { animation: num-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  }
+  @keyframes mark-pop {
+    0% { transform: scale(1); }
+    35% { transform: scale(1.045); }
+    100% { transform: scale(1); }
+  }
+  @keyframes num-pop {
+    0% { transform: scale(0.4); }
+    60% { transform: scale(1.22); }
+    100% { transform: scale(1); }
   }
 
   .done {
@@ -592,6 +613,8 @@
       var nowDone = !s.classList.contains('completed');
       setStep(s, nowDone, true);
       if (!nowDone) return;
+      s.classList.add('just');
+      setTimeout(function () { s.classList.remove('just'); }, 500);
       var allDone = steps.every(function (x) { return x.classList.contains('completed'); });
       if (allDone) {
         celebrate();
