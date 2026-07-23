@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#2440c8">
 <title>BrewBird — Cleaning Tablet Procedure</title>
 <meta name="description" content="Step-by-step cleaning tablet procedure for the BrewBird brewer.">
 <style>
@@ -15,6 +16,7 @@
     --warn-bg: #fff7e0;
     --warn-border: #e6b800;
     --ok: #1e8a4c;
+    --ok-tint: #e9f6ee;
     --card-border: #e3e6ef;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -30,28 +32,52 @@
     background: linear-gradient(160deg, var(--blue) 0%, var(--blue-dark) 100%);
     color: #fff;
     text-align: center;
-    padding: 40px 20px 34px;
+    padding: 36px 20px 30px;
   }
-  header img.logo { width: 110px; height: auto; margin-bottom: 14px; }
-  header h1 { font-size: 1.7rem; font-weight: 700; letter-spacing: 0.01em; }
+  header img.logo { width: 100px; height: auto; margin-bottom: 12px; }
+  header h1 { font-size: 1.65rem; font-weight: 700; letter-spacing: 0.01em; }
   header p.sub { margin-top: 6px; font-size: 1rem; opacity: 0.85; }
 
-  .intro {
-    max-width: 720px; margin: 0 auto; padding: 22px 18px 4px;
-    font-size: 0.95rem; color: var(--muted);
+  /* sticky progress bar */
+  .progress {
+    position: sticky; top: 0; z-index: 50;
+    background: #fff;
+    border-bottom: 1px solid var(--card-border);
+    padding: 9px 14px;
+    display: flex; align-items: center; gap: 12px;
+    max-width: none;
   }
-  .intro strong { color: var(--ink); }
+  .progress .label { font-size: 0.85rem; font-weight: 600; white-space: nowrap; }
+  .progress .track {
+    flex: 1; height: 8px; border-radius: 999px; background: var(--blue-tint);
+    overflow: hidden;
+  }
+  .progress .fill {
+    height: 100%; width: 0%;
+    background: var(--ok);
+    border-radius: 999px;
+    transition: width 0.3s ease;
+  }
+  .progress button.reset {
+    border: 1px solid var(--card-border); background: #fff; color: var(--muted);
+    font-size: 0.78rem; padding: 4px 10px; border-radius: 999px; cursor: pointer;
+  }
 
-  main { max-width: 720px; margin: 0 auto; padding: 14px 14px 30px; }
+  main { max-width: 720px; margin: 0 auto; padding: 8px 14px 30px; }
 
-  .step {
+  .card, .step {
     background: #fff;
     border: 1px solid var(--card-border);
     border-radius: 14px;
     padding: 20px 18px;
     margin-top: 18px;
     box-shadow: 0 1px 3px rgba(20, 30, 80, 0.05);
+    scroll-margin-top: 54px;
   }
+
+  .card h2 { font-size: 1.1rem; margin-bottom: 8px; }
+  .card p.note { font-size: 0.88rem; color: var(--muted); margin-top: 10px; }
+
   .step-head { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
   .step-num {
     flex: 0 0 auto;
@@ -61,19 +87,39 @@
     font-size: 1.15rem; font-weight: 700;
   }
   .step h2 { font-size: 1.2rem; font-weight: 700; }
+  .step.completed .step-num { background: var(--ok); }
+  .step.completed { background: #fcfdfc; }
+  .step.completed .photos, .step.completed ol.actions, .step.completed .warn, .step.completed .wait { opacity: 0.55; }
 
-  .step ol.actions { list-style: none; margin: 4px 0 2px; }
-  .step ol.actions li {
-    padding: 5px 0 5px 26px;
+  /* numbered sub-actions */
+  ol.actions { list-style: none; margin: 4px 0 2px; counter-reset: act; }
+  ol.actions li {
+    counter-increment: act;
+    padding: 6px 0 6px 34px;
     position: relative;
     font-size: 1rem;
   }
-  .step ol.actions li::before {
-    content: "";
-    position: absolute; left: 6px; top: 13px;
-    width: 8px; height: 8px; border-radius: 50%;
-    background: var(--blue);
+  ol.actions li::before {
+    content: counter(act);
+    position: absolute; left: 2px; top: 7px;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--blue-tint); color: var(--blue-dark);
+    font-size: 0.82rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
   }
+
+  .wait {
+    display: flex; gap: 10px; align-items: flex-start;
+    background: var(--blue-tint);
+    border: 1px solid #c9d3f2;
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin: 2px 0 10px;
+    font-size: 0.95rem;
+    color: var(--blue-dark);
+    font-weight: 600;
+  }
+  .wait .icon, .warn .icon { flex: 0 0 auto; font-size: 1.05rem; line-height: 1.4; }
 
   .warn {
     display: flex; gap: 10px; align-items: flex-start;
@@ -84,7 +130,6 @@
     margin: 10px 0 4px;
     font-size: 0.95rem;
   }
-  .warn .icon { flex: 0 0 auto; font-size: 1.05rem; line-height: 1.4; }
 
   .photos {
     display: grid;
@@ -92,7 +137,7 @@
     gap: 10px;
     margin-top: 14px;
   }
-  .photos figure { margin: 0; }
+  .photos figure { margin: 0; position: relative; }
   .photos img {
     width: 100%; height: auto; display: block;
     border-radius: 10px;
@@ -102,6 +147,18 @@
     font-size: 0.8rem; color: var(--muted);
     margin-top: 5px; text-align: center;
   }
+  /* corner badge tying a photo to its numbered action */
+  .pb {
+    position: absolute; top: 6px; left: 6px; z-index: 2;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--blue); color: #fff;
+    font-size: 0.85rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    pointer-events: none;
+  }
+  .pb.alert { background: var(--warn-border); color: #442f00; }
+  .pb.result { background: var(--ok); }
 
   ul.checklist { list-style: none; margin: 6px 0 2px; }
   ul.checklist li { padding: 4px 0; }
@@ -118,6 +175,19 @@
     color: var(--muted); text-decoration: line-through;
   }
 
+  button.mark {
+    display: block; width: 100%;
+    margin-top: 16px;
+    padding: 12px;
+    font-size: 1rem; font-weight: 600;
+    color: var(--blue); background: var(--blue-tint);
+    border: 1px solid #c9d3f2; border-radius: 10px;
+    cursor: pointer;
+  }
+  .step.completed button.mark {
+    color: var(--ok); background: var(--ok-tint); border-color: #bfe3cd;
+  }
+
   .done {
     text-align: center;
     background: var(--blue-tint);
@@ -129,12 +199,33 @@
   .done .check { font-size: 2rem; }
   .done h2 { font-size: 1.25rem; margin-top: 6px; color: var(--blue-dark); }
   .done p { color: var(--muted); font-size: 0.95rem; margin-top: 4px; }
+  .done.all { background: var(--ok-tint); border-color: #bfe3cd; }
+  .done.all h2 { color: var(--ok); }
 
   footer {
     text-align: center;
     padding: 18px 12px 34px;
     color: var(--muted);
     font-size: 0.8rem;
+  }
+
+  /* lightbox */
+  #lightbox {
+    display: none;
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(10, 12, 24, 0.92);
+    align-items: center; justify-content: center;
+    padding: 16px;
+    cursor: zoom-out;
+  }
+  #lightbox.open { display: flex; }
+  #lightbox img {
+    max-width: 100%; max-height: 92vh;
+    border-radius: 10px;
+  }
+  #lightbox .hint {
+    position: absolute; bottom: 14px; left: 0; right: 0;
+    text-align: center; color: rgba(255,255,255,0.75); font-size: 0.85rem;
   }
 </style>
 </head>
@@ -146,15 +237,30 @@
   <p class="sub">Step-by-step guide for the BrewBird brewer</p>
 </header>
 
-<p class="intro">
-  <strong>You will need:</strong> a Cleaning Tablet Pod, a Rinse Pod, a Dry Pod,
-  a Cafiza cleaning tablet, the tablet wand, and a pitcher (1000&nbsp;mL capacity or higher).
-  Tap a photo to view it full size.
-</p>
+<div class="progress">
+  <span class="label" id="progLabel">0 / 8 steps</span>
+  <div class="track"><div class="fill" id="progFill"></div></div>
+  <button class="reset" id="resetBtn" type="button">Reset</button>
+</div>
 
 <main>
 
-  <section class="step">
+  <section class="card">
+    <h2>Before you start — gather these items</h2>
+    <ul class="checklist" id="supplies">
+      <li><label><input type="checkbox" data-key="sup-0"><span>Cleaning Tablet Pod</span></label></li>
+      <li><label><input type="checkbox" data-key="sup-1"><span>Rinse Pod</span></label></li>
+      <li><label><input type="checkbox" data-key="sup-2"><span>Dry Pod</span></label></li>
+      <li><label><input type="checkbox" data-key="sup-3"><span>Cafiza cleaning tablet</span></label></li>
+      <li><label><input type="checkbox" data-key="sup-4"><span>Tablet wand</span></label></li>
+      <li><label><input type="checkbox" data-key="sup-5"><span>Pitcher — 1000&nbsp;mL capacity or higher</span></label></li>
+    </ul>
+    <p class="note">Tap any photo to enlarge it. Tap <strong>Mark step done</strong> as you go —
+    progress is saved on this phone, so you can lock the screen between cycles.
+    Use <strong>Reset</strong> to start a new cleaning.</p>
+  </section>
+
+  <section class="step" data-step="1">
     <div class="step-head">
       <div class="step-num">1</div>
       <h2>Insert Cleaning Tablet Pod</h2>
@@ -165,43 +271,50 @@
     </ol>
     <div class="photos">
       <figure>
+        <span class="pb">1</span>
         <a href="img/step1a-insert-pod.jpg"><img src="img/step1a-insert-pod.jpg" alt="Inserting the cleaning tablet pod into the pod holder" loading="lazy"></a>
         <figcaption>Insert the Cleaning Tablet Pod</figcaption>
       </figure>
       <figure>
+        <span class="pb">2</span>
         <a href="img/step1b-touch-start.jpg"><img src="img/step1b-touch-start.jpg" alt="Touching the screen to start the cycle" loading="lazy"></a>
         <figcaption>Touch the screen to start</figcaption>
       </figure>
     </div>
+    <button class="mark" type="button">Mark step done ✓</button>
   </section>
 
-  <section class="step">
+  <section class="step" data-step="2">
     <div class="step-head">
       <div class="step-num">2</div>
       <h2>Remove Tray</h2>
     </div>
     <ol class="actions">
-      <li>When prompted, remove the tray.</li>
+      <li>When prompted on the screen, remove the tray.</li>
       <li>Set the tray aside.</li>
     </ol>
-    <div class="warn"><span class="icon">⚠️</span><span>The tray has moving parts — hold it securely as shown.</span></div>
+    <div class="warn"><span class="icon">⚠️</span><span>The tray has moving parts — hold it securely as shown in the photo marked <strong>!</strong>.</span></div>
     <div class="photos">
       <figure>
+        <span class="pb">1</span>
         <a href="img/step2a-prompt.jpg"><img src="img/step2a-prompt.jpg" alt="Brewer screen showing the prompt to remove the tray" loading="lazy"></a>
         <figcaption>Wait for the prompt</figcaption>
       </figure>
       <figure>
+        <span class="pb alert">!</span>
         <a href="img/step2b-hold-tray.jpg"><img src="img/step2b-hold-tray.jpg" alt="Holding the tray securely from underneath with both surfaces supported" loading="lazy"></a>
         <figcaption>Hold the tray securely as shown</figcaption>
       </figure>
       <figure>
+        <span class="pb">2</span>
         <a href="img/step2c-set-aside.jpg"><img src="img/step2c-set-aside.jpg" alt="Tray set aside on the counter next to the brewer" loading="lazy"></a>
         <figcaption>Set the tray aside</figcaption>
       </figure>
     </div>
+    <button class="mark" type="button">Mark step done ✓</button>
   </section>
 
-  <section class="step">
+  <section class="step" data-step="3">
     <div class="step-head">
       <div class="step-num">3</div>
       <h2>Place Cafiza Tablet Into Wand</h2>
@@ -211,17 +324,20 @@
     </ol>
     <div class="photos">
       <figure>
+        <span class="pb">1</span>
         <a href="img/step3a-cafiza.jpg"><img src="img/step3a-cafiza.jpg" alt="Container of Cafiza espresso machine cleaning tablets" loading="lazy"></a>
         <figcaption>Cafiza cleaning tablets</figcaption>
       </figure>
       <figure>
+        <span class="pb result">✓</span>
         <a href="img/step3b-wand-loaded.jpg"><img src="img/step3b-wand-loaded.jpg" alt="Tablet wand loaded with a Cafiza tablet, hanging at the brewer" loading="lazy"></a>
-        <figcaption>Tablet loaded in the wand</figcaption>
+        <figcaption>How the loaded wand should look</figcaption>
       </figure>
     </div>
+    <button class="mark" type="button">Mark step done ✓</button>
   </section>
 
-  <section class="step">
+  <section class="step" data-step="4">
     <div class="step-head">
       <div class="step-num">4</div>
       <h2>Deploy Tablet</h2>
@@ -234,111 +350,130 @@
     <div class="warn"><span class="icon">⚠️</span><span>Verify the tablet did not fall into the trash area or onto the floor.</span></div>
     <div class="photos">
       <figure>
+        <span class="pb">1</span>
         <a href="img/step4a-wand-chute.jpg"><img src="img/step4a-wand-chute.jpg" alt="Wand inserted down into the open chute" loading="lazy"></a>
         <figcaption>Insert the wand into the chute</figcaption>
       </figure>
       <figure>
+        <span class="pb">1</span>
         <a href="img/step4b-tablet-down.jpg"><img src="img/step4b-tablet-down.jpg" alt="Wand held with the tablet side facing down" loading="lazy"></a>
         <figcaption>Tablet facing down</figcaption>
       </figure>
       <figure>
+        <span class="pb">3</span>
         <a href="img/step4c-verify.jpg"><img src="img/step4c-verify.jpg" alt="Wand fully inserted while listening for the tablet to drop" loading="lazy"></a>
         <figcaption>Listen for the tablet to fall</figcaption>
       </figure>
     </div>
+    <button class="mark" type="button">Mark step done ✓</button>
   </section>
 
-  <section class="step">
+  <section class="step" data-step="5">
     <div class="step-head">
       <div class="step-num">5</div>
       <h2>Run Cleaning Tablet Cycle</h2>
     </div>
     <ol class="actions">
       <li>Reinsert the tray — the action should be smooth.</li>
-      <li>Place a pitcher (1000&nbsp;mL capacity or higher) on the tray.</li>
+      <li>Place the pitcher (1000&nbsp;mL capacity or higher) on the tray.</li>
       <li>Touch the screen to start the cleaning cycle.</li>
     </ol>
     <div class="photos">
       <figure>
+        <span class="pb">1</span>
         <a href="img/step5a-reinsert-tray.jpg"><img src="img/step5a-reinsert-tray.jpg" alt="Reinserting the tray into the brewer" loading="lazy"></a>
         <figcaption>Reinsert the tray smoothly</figcaption>
       </figure>
       <figure>
+        <span class="pb">2</span>
         <a href="img/step5b-pitcher.jpg"><img src="img/step5b-pitcher.jpg" alt="Pitcher placed on the tray under the dispense area" loading="lazy"></a>
         <figcaption>Pitcher (1000 mL+) on the tray</figcaption>
       </figure>
       <figure>
+        <span class="pb">3</span>
         <a href="img/step5c-touch-start.jpg"><img src="img/step5c-touch-start.jpg" alt="Touching the screen to start the cleaning cycle" loading="lazy"></a>
         <figcaption>Touch the screen to start</figcaption>
       </figure>
     </div>
+    <button class="mark" type="button">Mark step done ✓</button>
   </section>
 
-  <section class="step">
+  <section class="step" data-step="6">
     <div class="step-head">
       <div class="step-num">6</div>
       <h2>Run Rinse Cycle</h2>
     </div>
+    <div class="wait"><span class="icon">⏱️</span><span>Wait for the cleaning cycle to finish before starting this step.</span></div>
     <ol class="actions">
-      <li>After the cleaning cycle is complete, remove the Cleaning Tablet Pod.</li>
+      <li>Remove the Cleaning Tablet Pod.</li>
       <li>Insert the Rinse Pod.</li>
       <li>Touch the screen to start the rinse cycle.</li>
     </ol>
     <div class="photos">
       <figure>
+        <span class="pb">2</span>
         <a href="img/step6a-rinse-pod.jpg"><img src="img/step6a-rinse-pod.jpg" alt="Rinse Cycle pod held next to the pod holder" loading="lazy"></a>
         <figcaption>Insert the Rinse Pod</figcaption>
       </figure>
       <figure>
+        <span class="pb">3</span>
         <a href="img/step6b-touch-start.jpg"><img src="img/step6b-touch-start.jpg" alt="Touching the screen to start the rinse cycle" loading="lazy"></a>
         <figcaption>Touch the screen to start</figcaption>
       </figure>
     </div>
+    <button class="mark" type="button">Mark step done ✓</button>
   </section>
 
-  <section class="step">
+  <section class="step" data-step="7">
     <div class="step-head">
       <div class="step-num">7</div>
       <h2>Run Blank Cycle</h2>
     </div>
+    <div class="wait"><span class="icon">⏱️</span><span>Wait for the rinse cycle to finish before starting this step.</span></div>
     <ol class="actions">
-      <li>After the rinse cycle is complete, remove the Rinse Pod.</li>
+      <li>Remove the Rinse Pod.</li>
       <li>Insert the Dry Pod.</li>
       <li>Touch the screen to start the blank cycle.</li>
     </ol>
     <div class="photos">
       <figure>
+        <span class="pb">2</span>
         <a href="img/step7a-dry-pod.jpg"><img src="img/step7a-dry-pod.jpg" alt="Dry Pod held next to the open pod holder" loading="lazy"></a>
         <figcaption>Insert the Dry Pod</figcaption>
       </figure>
       <figure>
+        <span class="pb">3</span>
         <a href="img/step7b-touch-start.jpg"><img src="img/step7b-touch-start.jpg" alt="Touching the screen to start the blank cycle" loading="lazy"></a>
         <figcaption>Touch the screen to start</figcaption>
       </figure>
     </div>
+    <button class="mark" type="button">Mark step done ✓</button>
   </section>
 
-  <section class="step">
+  <section class="step" data-step="8">
     <div class="step-head">
       <div class="step-num">8</div>
       <h2>Cleanup</h2>
     </div>
+    <div class="wait"><span class="icon">⏱️</span><span>Wait for the blank cycle to finish before starting cleanup.</span></div>
     <ul class="checklist">
-      <li><label><input type="checkbox"><span>Empty the pitcher into an appropriate disposal bin after the blank cycle completes.</span></label></li>
-      <li><label><input type="checkbox"><span>Dispose of any waste in the tray.</span></label></li>
-      <li><label><input type="checkbox"><span>Clean the brewer interior.</span></label></li>
-      <li><label><input type="checkbox"><span>Wipe the brewer exterior and surrounding area.</span></label></li>
-      <li><label><input type="checkbox"><span>Replace all items and tools.</span></label></li>
+      <li><label><input type="checkbox" data-key="cln-0"><span>Empty the pitcher into an appropriate disposal bin.</span></label></li>
+      <li><label><input type="checkbox" data-key="cln-1"><span>Dispose of any waste in the tray.</span></label></li>
+      <li><label><input type="checkbox" data-key="cln-2"><span>Clean the brewer interior.</span></label></li>
+      <li><label><input type="checkbox" data-key="cln-3"><span>Wipe the brewer exterior and surrounding area.</span></label></li>
+      <li><label><input type="checkbox" data-key="cln-4"><span>Replace all items and tools.</span></label></li>
     </ul>
     <div class="photos" style="max-width: 320px;">
       <figure>
+        <span class="pb">1</span>
         <a href="img/step8a-empty-pitcher.jpg"><img src="img/step8a-empty-pitcher.jpg" alt="Emptying the pitcher into a sink" loading="lazy"></a>
         <figcaption>Empty the pitcher into an appropriate disposal bin</figcaption>
       </figure>
     </div>
+    <button class="mark" type="button">Mark step done ✓</button>
   </section>
 
-  <div class="done">
+  <div class="done" id="doneBanner">
     <div class="check">✅</div>
     <h2>Cleaning Tablet Procedure Complete</h2>
     <p>The brewer is clean and ready for use.</p>
@@ -347,6 +482,86 @@
 </main>
 
 <footer>BrewBird · Cleaning Tablet Procedure · Rev 01</footer>
+
+<div id="lightbox"><img alt=""><div class="hint">Tap anywhere to close</div></div>
+
+<script>
+(function () {
+  var TOTAL = 8;
+  var steps = Array.prototype.slice.call(document.querySelectorAll('.step'));
+  var boxes = Array.prototype.slice.call(document.querySelectorAll('input[data-key]'));
+  var progLabel = document.getElementById('progLabel');
+  var progFill = document.getElementById('progFill');
+  var doneBanner = document.getElementById('doneBanner');
+  var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function store(key, val) {
+    try { val === null ? localStorage.removeItem(key) : localStorage.setItem(key, val); }
+    catch (e) { /* private mode — page still works, just no persistence */ }
+  }
+  function load(key) {
+    try { return localStorage.getItem(key); } catch (e) { return null; }
+  }
+
+  function refresh() {
+    var done = 0;
+    steps.forEach(function (s) { if (s.classList.contains('completed')) done++; });
+    progLabel.textContent = done + ' / ' + TOTAL + ' steps';
+    progFill.style.width = (done / TOTAL * 100) + '%';
+    doneBanner.classList.toggle('all', done === TOTAL);
+  }
+
+  function setStep(s, completed, save) {
+    s.classList.toggle('completed', completed);
+    var btn = s.querySelector('button.mark');
+    var num = s.querySelector('.step-num');
+    btn.textContent = completed ? 'Done — tap to undo' : 'Mark step done ✓';
+    num.textContent = completed ? '✓' : s.dataset.step;
+    if (save) store('bb-step-' + s.dataset.step, completed ? '1' : null);
+    refresh();
+  }
+
+  steps.forEach(function (s) {
+    if (load('bb-step-' + s.dataset.step) === '1') setStep(s, true, false);
+    s.querySelector('button.mark').addEventListener('click', function () {
+      var nowDone = !s.classList.contains('completed');
+      setStep(s, nowDone, true);
+      if (nowDone) {
+        var next = steps[steps.indexOf(s) + 1] || doneBanner;
+        next.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' });
+      }
+    });
+  });
+
+  boxes.forEach(function (b) {
+    if (load('bb-' + b.dataset.key) === '1') b.checked = true;
+    b.addEventListener('change', function () {
+      store('bb-' + b.dataset.key, b.checked ? '1' : null);
+    });
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', function () {
+    if (!confirm('Reset all progress for a new cleaning?')) return;
+    steps.forEach(function (s) { setStep(s, false, true); });
+    boxes.forEach(function (b) { b.checked = false; store('bb-' + b.dataset.key, null); });
+    window.scrollTo({ top: 0, behavior: reducedMotion ? 'auto' : 'smooth' });
+  });
+
+  var lb = document.getElementById('lightbox');
+  var lbImg = lb.querySelector('img');
+  document.querySelectorAll('.photos a').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      e.preventDefault();
+      lbImg.src = a.getAttribute('href');
+      lbImg.alt = a.querySelector('img').alt;
+      lb.classList.add('open');
+    });
+  });
+  lb.addEventListener('click', function () { lb.classList.remove('open'); lbImg.removeAttribute('src'); });
+
+  refresh();
+})();
+</script>
 
 </body>
 </html>
