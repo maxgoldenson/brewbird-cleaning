@@ -287,7 +287,8 @@
     </ul>
     <p class="note">Tap any photo to enlarge it. Tap <strong>Mark step done</strong> as you go —
     progress is saved on this phone, so you can lock the screen between cycles.
-    Use <strong>Reset</strong> to start a new cleaning.</p>
+    Finishing the last step clears everything for the next cleaning;
+    <strong>Reset</strong> does the same at any time.</p>
   </section>
 
   <section class="step" data-step="1">
@@ -560,18 +561,25 @@
     refresh();
   }
 
-  // completion celebration: animated check, then back to the top
+  function resetAll() {
+    steps.forEach(function (s) { setStep(s, false, true); });
+    boxes.forEach(function (b) { b.checked = false; store('bb-' + b.dataset.key, null); });
+  }
+
+  // completion celebration: animated check, then back to the top,
+  // fully reset for the next cleaning
   var cel = document.getElementById('celebrate');
   var celTimer = null;
   function closeCelebrate() {
     if (!cel.classList.contains('open')) return;
     clearTimeout(celTimer);
+    resetAll(); // page behind the overlay is clean before the fade reveals it
     cel.classList.add('fade');
     setTimeout(function () { cel.classList.remove('open', 'fade'); }, 400);
     window.scrollTo({ top: 0, behavior: reducedMotion ? 'auto' : 'smooth' });
   }
   function celebrate() {
-    if (reducedMotion) { window.scrollTo({ top: 0 }); return; }
+    if (reducedMotion) { resetAll(); window.scrollTo({ top: 0 }); return; }
     cel.classList.remove('fade');
     cel.classList.add('open');
     celTimer = setTimeout(closeCelebrate, 2400);
@@ -603,8 +611,7 @@
 
   document.getElementById('resetBtn').addEventListener('click', function () {
     if (!confirm('Reset all progress for a new cleaning?')) return;
-    steps.forEach(function (s) { setStep(s, false, true); });
-    boxes.forEach(function (b) { b.checked = false; store('bb-' + b.dataset.key, null); });
+    resetAll();
     window.scrollTo({ top: 0, behavior: reducedMotion ? 'auto' : 'smooth' });
   });
 
